@@ -1,9 +1,13 @@
 #include <iostream>
-#include <ostream>
 #include <regex>
 #include <string>
+#include <vector>
+
+std::string command;
+std::vector<std::string> arguments;
 
 void parseInput(std::string input) {
+  std::vector<std::string> inputs;
   std::regex words_regex(R"([^ ="]+|"[^"]+"|=)");
   for (auto i = std::sregex_iterator(input.begin(), input.end(), words_regex);
        i != std::sregex_iterator(); i++) {
@@ -11,15 +15,17 @@ void parseInput(std::string input) {
     if (token[0] == '"') {
       token = token.substr(1, token.length() - 2);
     }
-    std::cout << token << std::endl;
+    inputs.push_back(token);
+  }
+  command = inputs[0];
+  for (auto i = inputs.begin() + 1; i != inputs.end(); i++) {
+    arguments.push_back(*i);
   }
 }
 
 int main(int argc, char *argv[]) {
-  std::string name;
+  std::string input;
 
-  std::cout << "Please, enter your full name: ";
-  std::getline(std::cin, name);
-  std::cout << "Hello, " << name << std::endl;
-  parseInput(name);
+  std::getline(std::cin, input);
+  parseInput(input);
 }
