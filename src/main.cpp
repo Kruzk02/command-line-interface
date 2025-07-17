@@ -1,17 +1,21 @@
+#include <cstddef>
+#include <filesystem>
 #include <iostream>
+#include <iterator>
 #include <ostream>
 #include <regex>
 #include <string>
 #include <vector>
 
-std::vector<std::string> parseInput(std::string input) {
+std::vector<std::string> parseInput(const std::string &input) {
   if (input.empty())
     return {};
-  std::vector<std::string> inputs;
 
+  std::vector<std::string> inputs;
   std::regex words_regex(R"([^ ="]+|"[^"]+"|=)");
+
   for (auto i = std::sregex_iterator(input.begin(), input.end(), words_regex);
-       i != std::sregex_iterator(); i++) {
+       i != std::sregex_iterator(); ++i) {
     std::string token = (*i).str();
     if (token[0] == '"') {
       token = token.substr(1, token.length() - 2);
@@ -23,13 +27,30 @@ std::vector<std::string> parseInput(std::string input) {
   return inputs;
 }
 
+void changeDirectory(std::string folder) {
+  if (std::filesystem::exists(folder)) {
+    std::string newPath =
+        std::filesystem::current_path().string() + "/" + folder;
+    std::filesystem::current_path(newPath);
+    std::cout << newPath << std::endl;
+  } else {
+    std::cout << "cd: " << folder << ": No such file or directory" << std::endl;
+  }
+}
+
 int main(int argc, char *argv[]) {
-  std::string input;
+  while (true) {
+    std::string input;
 
-  std::getline(std::cin, input);
-  std::vector<std::string> inputs = parseInput(input);
+    std::getline(std::cin, input);
+    std::vector<std::string> inputs = parseInput(input);
 
-  for (const auto command : inputs) {
-    std::cout << command << std::endl;
+    if (inputs[0] == "cd") {
+      if (inputs.size() - 1 >= 2) {
+        std::cout << "cd: too many arguments " << std::endl;
+      }
+
+      changeDirectory(inputs[1]);
+    }
   }
 }
