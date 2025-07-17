@@ -29,8 +29,7 @@ std::vector<std::string> parseInput(const std::string &input) {
 
 void changeDirectory(std::string folder) {
   if (std::filesystem::exists(folder)) {
-    std::string newPath =
-        std::filesystem::current_path().string() + "/" + folder;
+    std::string newPath = std::filesystem::absolute(folder);
     std::filesystem::current_path(newPath);
     std::cout << newPath << std::endl;
   } else {
