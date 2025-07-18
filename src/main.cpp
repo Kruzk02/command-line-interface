@@ -1,15 +1,12 @@
-#include <cstddef>
 #include <filesystem>
 #include <iostream>
-#include <iterator>
 #include <ostream>
 #include <regex>
 #include <string>
 #include <vector>
 
 std::vector<std::string> parseInput(const std::string &input) {
-  if (input.empty())
-    return {};
+  if (input.empty()) return {};
 
   std::vector<std::string> inputs;
   std::regex words_regex(R"([^ ="]+|"[^"]+"|=)");
@@ -31,7 +28,6 @@ void changeDirectory(std::string folder) {
   if (std::filesystem::exists(folder)) {
     std::string newPath = std::filesystem::absolute(folder);
     std::filesystem::current_path(newPath);
-    std::cout << newPath << std::endl;
   } else {
     std::cout << "cd: " << folder << ": No such file or directory" << std::endl;
   }
@@ -39,6 +35,7 @@ void changeDirectory(std::string folder) {
 
 int main(int argc, char *argv[]) {
   while (true) {
+    std::cout << std::filesystem::current_path().string() << "$ ";
     std::string input;
 
     std::getline(std::cin, input);
@@ -50,6 +47,10 @@ int main(int argc, char *argv[]) {
       }
 
       changeDirectory(inputs[1]);
+    } else if (inputs[0] == "exit") {
+      exit(0);
+    } else {
+      std::cout << inputs[0] << ": command not found" << std::endl;
     }
   }
 }
