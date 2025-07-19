@@ -47,6 +47,10 @@ int main(int argc, char *argv[]) {
       }
 
       changeDirectory(inputs[1]);
+    } else if (inputs[0] == "ls") {
+      for (const auto &entry : std::filesystem::directory_iterator(".")) {
+        std::cout << entry.path().string().substr(2) << std::endl;
+      }
     } else if (inputs[0] == "exit") {
       exit(0);
     } else {
