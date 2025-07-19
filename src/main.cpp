@@ -1,3 +1,5 @@
+#include <cstddef>
+#include <cstdlib>
 #include <filesystem>
 #include <iostream>
 #include <ostream>
@@ -5,7 +7,7 @@
 #include <string>
 #include <vector>
 
-std::vector<std::string> parseInput(const std::string &input) {
+std::vector<std::string> parse_input(const std::string &input) {
   if (input.empty()) return {};
 
   std::vector<std::string> inputs;
@@ -24,12 +26,34 @@ std::vector<std::string> parseInput(const std::string &input) {
   return inputs;
 }
 
-void changeDirectory(std::string folder) {
+void handle_change_directory(std::string folder) {
   if (std::filesystem::exists(folder)) {
     std::string newPath = std::filesystem::absolute(folder);
     std::filesystem::current_path(newPath);
   } else {
     std::cout << "cd: " << folder << ": No such file or directory" << std::endl;
+  }
+}
+
+void handle_list_command() {
+  for (const auto &entry : std::filesystem::directory_iterator(".")) {
+    std::cout << entry.path().string().substr(2) << std::endl;
+  }
+}
+
+void handle_command(std::vector<std::string> inputs) {
+  if (inputs[0] == "cd") {
+    if (inputs.size() - 1 >= 2) {
+      std::cout << "cd: too many arguments " << std::endl;
+    }
+
+    handle_change_directory(inputs[1]);
+  } else if (inputs[0] == "ls") {
+    handle_list_command();
+  } else if (inputs[0] == "exit") {
+    exit(0);
+  } else {
+    std::cout << inputs[0] << ": command not found" << std::endl;
   }
 }
 
@@ -39,22 +63,8 @@ int main(int argc, char *argv[]) {
     std::string input;
 
     std::getline(std::cin, input);
-    std::vector<std::string> inputs = parseInput(input);
+    std::vector<std::string> inputs = parse_input(input);
 
-    if (inputs[0] == "cd") {
-      if (inputs.size() - 1 >= 2) {
-        std::cout << "cd: too many arguments " << std::endl;
-      }
-
-      changeDirectory(inputs[1]);
-    } else if (inputs[0] == "ls") {
-      for (const auto &entry : std::filesystem::directory_iterator(".")) {
-        std::cout << entry.path().string().substr(2) << std::endl;
-      }
-    } else if (inputs[0] == "exit") {
-      exit(0);
-    } else {
-      std::cout << inputs[0] << ": command not found" << std::endl;
-    }
+    handle_command(inputs);
   }
 }
