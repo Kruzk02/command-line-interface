@@ -1,4 +1,3 @@
-#include <cstddef>
 #include <cstdlib>
 #include <filesystem>
 #include <iostream>
@@ -35,9 +34,19 @@ void handle_change_directory(std::string folder) {
   }
 }
 
-void handle_list_command() {
+void handle_list_command(std::string argument) {
   for (const auto &entry : std::filesystem::directory_iterator(".")) {
-    std::cout << entry.path().string().substr(2) << std::endl;
+    std::string directory = entry.path().string().substr(2);
+
+    if (argument == "-a") {
+      std::cout << directory << std::endl;
+    } else {
+      if (directory.at(0) == '.') {
+        continue;
+      } else {
+        std::cout << directory << std::endl;
+      }
+    }
   }
 }
 
@@ -49,7 +58,7 @@ void handle_command(std::vector<std::string> inputs) {
 
     handle_change_directory(inputs[1]);
   } else if (inputs[0] == "ls") {
-    handle_list_command();
+    handle_list_command(inputs[1]);
   } else if (inputs[0] == "exit") {
     exit(0);
   } else {
