@@ -4,7 +4,14 @@
 #include <ostream>
 #include <regex>
 #include <string>
+#include <unordered_map>
 #include <vector>
+
+std::unordered_map<std::string, std::string> commands = {
+    {"ls", "List files"},
+    {"cd", "Change directory"},
+    {"exit", "Exit the shell"},
+    {"help", "Diplay help information for all commands or a specific one."}};
 
 std::vector<std::string> parse_input(const std::string &input) {
   if (input.empty()) return {};
@@ -50,6 +57,14 @@ void handle_list_command(std::string argument) {
   }
 }
 
+void handle_help_command() {
+  std::cout << "Available commands:" << std::endl;
+  for (auto &command : commands) {
+    std::cout << std::string(5, ' ') << command.first << ": " << command.second
+              << std::endl;
+  }
+}
+
 void handle_command(std::vector<std::string> inputs) {
   if (inputs[0] == "cd") {
     if (inputs.size() - 1 >= 2) {
@@ -61,6 +76,8 @@ void handle_command(std::vector<std::string> inputs) {
     handle_list_command(inputs[1]);
   } else if (inputs[0] == "exit") {
     exit(0);
+  } else if (inputs[0] == "help") {
+    handle_help_command();
   } else {
     std::cout << inputs[0] << ": command not found" << std::endl;
   }
