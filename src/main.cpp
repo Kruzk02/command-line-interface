@@ -7,6 +7,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "../include/cdCommand.h"
+
 std::unordered_map<std::string, std::string> commands = {
     {"ls", "List files"},
     {"cd", "Change directory"},
@@ -30,15 +32,6 @@ std::vector<std::string> parse_input(const std::string &input) {
   }
 
   return inputs;
-}
-
-void handle_change_directory(std::string folder) {
-  if (std::filesystem::exists(folder)) {
-    std::string newPath = std::filesystem::absolute(folder);
-    std::filesystem::current_path(newPath);
-  } else {
-    std::cout << "cd: " << folder << ": No such file or directory" << std::endl;
-  }
 }
 
 void handle_list_command(std::string argument) {
@@ -71,7 +64,12 @@ void handle_command(std::vector<std::string> inputs) {
       std::cout << "cd: too many arguments " << std::endl;
     }
 
-    handle_change_directory(inputs[1]);
+    CommandContext ctx;
+    Command *cmd = new cdCommand();
+    ctx.arguments.push_back(inputs[1]);
+    cmd->execute(ctx);
+
+    delete cmd;
   } else if (inputs[0] == "ls") {
     handle_list_command(inputs[1]);
   } else if (inputs[0] == "exit") {
