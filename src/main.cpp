@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "../include/ListCommand.h"
 #include "../include/cdCommand.h"
 
 std::unordered_map<std::string, std::string> commands = {
@@ -34,22 +35,6 @@ std::vector<std::string> parse_input(const std::string &input) {
   return inputs;
 }
 
-void handle_list_command(std::string argument) {
-  for (const auto &entry : std::filesystem::directory_iterator(".")) {
-    std::string directory = entry.path().string().substr(2);
-
-    if (argument == "-a") {
-      std::cout << directory << std::endl;
-    } else {
-      if (directory.at(0) == '.') {
-        continue;
-      } else {
-        std::cout << directory << std::endl;
-      }
-    }
-  }
-}
-
 void handle_help_command() {
   std::cout << "Available commands:" << std::endl;
   for (auto &command : commands) {
@@ -59,19 +44,17 @@ void handle_help_command() {
 }
 
 void handle_command(std::vector<std::string> inputs) {
+  CommandContext ctx;
+  Command *cmd;
   if (inputs[0] == "cd") {
     if (inputs.size() - 1 >= 2) {
       std::cout << "cd: too many arguments " << std::endl;
     }
-
-    CommandContext ctx;
-    Command *cmd = new cdCommand();
+    cmd = new cdCommand();
     ctx.arguments.push_back(inputs[1]);
-    cmd->execute(ctx);
-
-    delete cmd;
   } else if (inputs[0] == "ls") {
-    handle_list_command(inputs[1]);
+    cmd = new ListCommand;
+    ctx.arguments.push_back(inputs[1]);
   } else if (inputs[0] == "exit") {
     exit(0);
   } else if (inputs[0] == "help") {
@@ -79,6 +62,9 @@ void handle_command(std::vector<std::string> inputs) {
   } else {
     std::cout << inputs[0] << ": command not found" << std::endl;
   }
+
+  cmd->execute(ctx);
+  delete cmd;
 }
 
 int main(int argc, char *argv[]) {
