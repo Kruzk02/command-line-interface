@@ -45,13 +45,14 @@ void handle_help_command() {
 
 void handle_command(std::vector<std::string> inputs) {
   CommandContext ctx;
-  Command *cmd;
+  Command *cmd = nullptr;
   if (inputs[0] == "cd") {
     if (inputs.size() - 1 >= 2) {
       std::cout << "cd: too many arguments " << std::endl;
+    } else {
+      cmd = new cdCommand();
+      ctx.arguments.push_back(inputs[1]);
     }
-    cmd = new cdCommand();
-    ctx.arguments.push_back(inputs[1]);
   } else if (inputs[0] == "ls") {
     cmd = new ListCommand;
     ctx.arguments.push_back(inputs[1]);
@@ -59,12 +60,14 @@ void handle_command(std::vector<std::string> inputs) {
     exit(0);
   } else if (inputs[0] == "help") {
     handle_help_command();
+    return;
   } else {
     std::cout << inputs[0] << ": command not found" << std::endl;
   }
-
-  cmd->execute(ctx);
-  delete cmd;
+  if (cmd) {
+    cmd->execute(ctx);
+    delete cmd;
+  }
 }
 
 int main(int argc, char *argv[]) {
