@@ -4,17 +4,11 @@
 #include <ostream>
 #include <regex>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
+#include "../include/HelpCommand.h"
 #include "../include/ListCommand.h"
 #include "../include/cdCommand.h"
-
-std::unordered_map<std::string, std::string> commands = {
-    {"ls", "List files"},
-    {"cd", "Change directory"},
-    {"exit", "Exit the shell"},
-    {"help", "Diplay help information for all commands or a specific one."}};
 
 std::vector<std::string> parse_input(const std::string &input) {
   if (input.empty()) return {};
@@ -35,14 +29,6 @@ std::vector<std::string> parse_input(const std::string &input) {
   return inputs;
 }
 
-void handle_help_command() {
-  std::cout << "Available commands:" << std::endl;
-  for (auto &command : commands) {
-    std::cout << std::string(5, ' ') << command.first << ": " << command.second
-              << std::endl;
-  }
-}
-
 void handle_command(std::vector<std::string> inputs) {
   CommandContext ctx;
   Command *cmd = nullptr;
@@ -59,8 +45,7 @@ void handle_command(std::vector<std::string> inputs) {
   } else if (inputs[0] == "exit") {
     exit(0);
   } else if (inputs[0] == "help") {
-    handle_help_command();
-    return;
+    cmd = new HelpCommand();
   } else {
     std::cout << inputs[0] << ": command not found" << std::endl;
   }
