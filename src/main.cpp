@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "../include/HelpCommand.h"
+#include "../include/Invoker.h"
 #include "../include/ListCommand.h"
 #include "../include/cdCommand.h"
 
@@ -32,6 +33,7 @@ std::vector<std::string> parse_input(const std::string &input) {
 void handle_command(std::vector<std::string> inputs) {
   CommandContext ctx;
   Command *cmd = nullptr;
+  Invoker *invoker = new Invoker();
   if (inputs[0] == "cd") {
     if (inputs.size() - 1 >= 2) {
       std::cout << "cd: too many arguments " << std::endl;
@@ -50,7 +52,9 @@ void handle_command(std::vector<std::string> inputs) {
     std::cout << inputs[0] << ": command not found" << std::endl;
   }
   if (cmd) {
-    cmd->execute(ctx);
+    invoker->setCommand(cmd);
+    invoker->execute(ctx);
+    delete invoker;
     delete cmd;
   }
 }
