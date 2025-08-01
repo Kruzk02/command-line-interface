@@ -15,7 +15,7 @@
 
 std::unordered_map<std::string, std::function<Command *()>> commandMap;
 
-std::vector<std::string> parse_input(const std::string &input) {
+std::vector<std::string> parse_input(const std::string input) {
   if (input.empty()) return {};
 
   std::vector<std::string> inputs;
@@ -34,29 +34,29 @@ std::vector<std::string> parse_input(const std::string &input) {
   return inputs;
 }
 
-void handle_command(Invoker &invoker, std::vector<std::string> inputs) {
+void handle_command(Invoker &invoker, const std::vector<std::string> &inputs) {
+  if (inputs.empty()) return;
+
   if (inputs[0] == "exit") {
-    std::cout << "exit" << std::endl;
-    exit(1);
+    std::cout << "exit\n";
+    exit(0);
+  }
+
+  if (commandMap.find(inputs[0]) == commandMap.end()) {
+    std::cout << inputs[0] << ": command not found\n";
+    return;
   }
 
   CommandContext ctx;
-  Command *cmd = nullptr;
-  if (commandMap.find(inputs[0]) != commandMap.end()) {
-    cmd = commandMap[inputs[0]]();
+  Command *cmd = commandMap[inputs[0]]();
 
-    if (inputs.size() > 1) {
-      ctx.arguments.assign(inputs.begin() + 1, inputs.end());
-    } else {
-      ctx.arguments.push_back(inputs[1]);
-    }
-
-    invoker.setCommand(cmd);
-    invoker.execute(ctx);
-    delete cmd;
-  } else {
-    std::cout << inputs[0] << ": command not found\n";
+  if (inputs.size() > 1) {
+    ctx.arguments.assign(inputs.begin() + 1, inputs.end());
   }
+
+  invoker.setCommand(cmd);
+  invoker.execute(ctx);
+  delete cmd;
 }
 
 int main(int argc, char *argv[]) {
