@@ -35,6 +35,11 @@ std::vector<std::string> parse_input(const std::string &input) {
 }
 
 void handle_command(Invoker &invoker, std::vector<std::string> inputs) {
+  if (inputs[0] == "exit") {
+    std::cout << "exit" << std::endl;
+    exit(1);
+  }
+
   CommandContext ctx;
   Command *cmd = nullptr;
   if (commandMap.find(inputs[0]) != commandMap.end()) {
