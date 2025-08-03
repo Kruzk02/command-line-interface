@@ -6,6 +6,6 @@
 
 class cdCommand : public Command {
  public:
-  void execute(const CommandContext& ctx) override;
+  void execute(CommandContext& ctx) override;
 };
 #endif  // !DEBUG

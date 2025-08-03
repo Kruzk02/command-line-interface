@@ -6,7 +6,7 @@
 class Command {
  public:
   virtual ~Command() = default;
-  virtual void execute(const CommandContext& ctx) = 0;
+  virtual void execute(CommandContext& ctx) = 0;
 };
 
 #endif  // !COMMAND_H
