@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <expected>
 #include <filesystem>
 #include <functional>
 #include <iostream>
@@ -35,8 +36,9 @@ std::vector<std::string> parse_input(const std::string input) {
   return inputs;
 }
 
-void handle_command(Invoker &invoker, const std::vector<std::string> &inputs) {
-  if (inputs.empty()) return;
+std::expected<void, std::string> handle_command(
+    Invoker &invoker, const std::vector<std::string> &inputs) {
+  if (inputs.empty()) return std::unexpected("Input cannot be empty");
 
   if (inputs[0] == "exit") {
     std::cout << "exit\n";
@@ -44,8 +46,7 @@ void handle_command(Invoker &invoker, const std::vector<std::string> &inputs) {
   }
 
   if (commandMap.find(inputs[0]) == commandMap.end()) {
-    std::cout << inputs[0] << ": command not found\n";
-    return;
+    return std::unexpected("Command not found");
   }
 
   ctx.arguments.clear();
@@ -58,6 +59,8 @@ void handle_command(Invoker &invoker, const std::vector<std::string> &inputs) {
   invoker.setCommand(cmd);
   invoker.execute(ctx);
   delete cmd;
+
+  return {};
 }
 
 int main(int argc, char *argv[]) {
@@ -76,6 +79,9 @@ int main(int argc, char *argv[]) {
     std::getline(std::cin, input);
     std::vector<std::string> inputs = parse_input(input);
 
-    handle_command(invoker, inputs);
+    auto result = handle_command(invoker, inputs);
+    if (!result) {
+      std::cerr << "Error: " << result.error() << std::endl;
+    }
   }
 }
