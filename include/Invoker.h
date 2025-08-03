@@ -10,7 +10,7 @@ class Invoker {
  public:
   Invoker();
   void setCommand(Command* command);
-  void execute(const CommandContext& ctx);
+  void execute(CommandContext& ctx);
 };
 
 #endif  // !INVOKER_H

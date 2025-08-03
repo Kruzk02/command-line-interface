@@ -6,7 +6,7 @@
 
 class HelpCommand : public Command {
  public:
-  void execute(const CommandContext& ctx) override;
+  void execute(CommandContext& ctx) override;
 };
 
 #endif  // !HELPCOMMAND_H
