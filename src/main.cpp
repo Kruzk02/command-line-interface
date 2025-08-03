@@ -14,6 +14,7 @@
 #include "../include/cdCommand.h"
 
 std::unordered_map<std::string, std::function<Command *()>> commandMap;
+CommandContext ctx;
 
 std::vector<std::string> parse_input(const std::string input) {
   if (input.empty()) return {};
@@ -47,7 +48,7 @@ void handle_command(Invoker &invoker, const std::vector<std::string> &inputs) {
     return;
   }
 
-  CommandContext ctx;
+  ctx.arguments.clear();
   Command *cmd = commandMap[inputs[0]]();
 
   if (inputs.size() > 1) {
@@ -67,7 +68,9 @@ int main(int argc, char *argv[]) {
   commandMap["help"] = []() { return new HelpCommand(); };
 
   while (true) {
-    std::cout << std::filesystem::current_path().string() << "$ ";
+    if (ctx.currentDirectory.empty())
+      ctx.currentDirectory = std::filesystem::current_path().string();
+    std::cout << ctx.currentDirectory << "$ ";
     std::string input;
 
     std::getline(std::cin, input);
