@@ -4,7 +4,6 @@
 #include <functional>
 #include <iostream>
 #include <ostream>
-#include <regex>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -12,29 +11,11 @@
 #include "../include/HelpCommand.h"
 #include "../include/Invoker.h"
 #include "../include/ListCommand.h"
+#include "../include/Tokenizer.h"
 #include "../include/cdCommand.h"
 
 std::unordered_map<std::string, std::function<Command *()>> commandMap;
 CommandContext ctx;
-
-std::vector<std::string> parse_input(const std::string input) {
-  if (input.empty()) return {};
-
-  std::vector<std::string> inputs;
-  std::regex words_regex(R"([^ ="]+|"[^"]+"|=)");
-
-  for (auto i = std::sregex_iterator(input.begin(), input.end(), words_regex);
-       i != std::sregex_iterator(); ++i) {
-    std::string token = (*i).str();
-    if (token[0] == '"') {
-      token = token.substr(1, token.length() - 2);
-    }
-
-    inputs.push_back(token);
-  }
-
-  return inputs;
-}
 
 std::expected<void, std::string> handle_command(
     Invoker &invoker, const std::vector<std::string> &inputs) {
@@ -77,7 +58,7 @@ int main(int argc, char *argv[]) {
     std::string input;
 
     std::getline(std::cin, input);
-    std::vector<std::string> inputs = parse_input(input);
+    std::vector<std::string> inputs = Tokenizer::parse_input(input);
 
     auto result = handle_command(invoker, inputs);
     if (!result) {
