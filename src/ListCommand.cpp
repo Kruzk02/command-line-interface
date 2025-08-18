@@ -13,17 +13,30 @@ namespace fs = std::filesystem;
 uintmax_t get_directory_size(const fs::path& dir) {
   uintmax_t size = 0;
 
-  if (fs::exists(dir) && fs::is_directory(dir)) {
-    for (const auto& entry : fs::directory_iterator(dir)) {
-      if (fs::is_regular_file(entry)) {
-        size += fs::file_size(entry);
+  if (fs::exists(dir)) {
+    if (fs::is_directory(dir)) {
+      for (const auto& entry : fs::directory_iterator(dir)) {
+        if (fs::is_regular_file(entry)) {
+          size += fs::file_size(entry);
+        }
       }
+    } else {
+      size += fs::file_size(dir);
     }
-  } else if (fs::exists(dir) && fs::is_regular_file(dir)) {
-    size += fs::file_size(dir);
   }
-
   return size;
+}
+
+std::tm* getFileLastModificationTime(std::string directory) {
+  fs::file_time_type ftime = fs::last_write_time(directory);
+
+  auto time = std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+      ftime - fs::file_time_type::clock::now() +
+      std::chrono::system_clock::now());
+
+  std::time_t cftime = std::chrono::system_clock::to_time_t(time);
+
+  return std::localtime(&cftime);
 }
 
 void ListCommand::execute(CommandContext& ctx) {
@@ -38,22 +51,16 @@ void ListCommand::execute(CommandContext& ctx) {
       } else if (ctx.arguments[0] == "-l") {
         if (directory[0] != '.') {
           fs::file_status status = fs::status(directory);
-          fs::file_time_type ftime = fs::last_write_time(directory);
-
-          auto time =
-              std::chrono::time_point_cast<std::chrono::system_clock::duration>(
-                  ftime - fs::file_time_type::clock::now() +
-                  std::chrono::system_clock::now());
-          std::time_t cftime = std::chrono::system_clock::to_time_t(time);
-          std::tm* timeinfo = std::localtime(&cftime);
-
           fs::perms p = status.permissions();
+
+          std::tm* timeInfo = getFileLastModificationTime(directory);
+
           std::cout
               << ((p & fs::perms::owner_read) != fs::perms::none ? "r" : "-")
               << ((p & fs::perms::owner_write) != fs::perms::none ? "w" : "-")
               << ((p & fs::perms::owner_exec) != fs::perms::none ? "x" : "-")
               << "\t" << get_directory_size(directory) << "\t"
-              << std::put_time(timeinfo, "%m %d %H:%M") << "\t" << directory
+              << std::put_time(timeInfo, "%m %d %H:%M") << "\t" << directory
               << std::endl;
         }
       }
