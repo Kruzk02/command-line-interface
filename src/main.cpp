@@ -26,12 +26,14 @@ std::expected<void, std::string> handle_command(
     exit(0);
   }
 
-  if (commandMap.find(inputs[0]) == commandMap.end()) {
+  ctx.command = inputs[0];
+
+  if (commandMap.find(ctx.command) == commandMap.end()) {
     return std::unexpected("Command not found");
   }
 
   ctx.arguments.clear();
-  Command *cmd = commandMap[inputs[0]]();
+  Command *cmd = commandMap[ctx.command]();
 
   if (inputs.size() > 1) {
     ctx.arguments.assign(inputs.begin() + 1, inputs.end());

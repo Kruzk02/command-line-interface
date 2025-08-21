@@ -8,6 +8,7 @@ struct CommandContext {
     bool is_list_information;
   };
 
+  std::string command;
   std::vector<std::string> arguments;
   Options options;
 
