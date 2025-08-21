@@ -58,7 +58,8 @@ int main(int argc, char *argv[]) {
     std::string input;
 
     std::getline(std::cin, input);
-    std::vector<std::string> inputs = Tokenizer::parse_input(input);
+    Tokenizer tokenizer(input);
+    std::vector<std::string> inputs = tokenizer.tokenize();
 
     auto result = handle_command(invoker, inputs);
     if (!result) {

@@ -1,11 +1,14 @@
-#ifndef TOKENIZER_H
-#define TOKENIZER_H
+#pragma once
 
+#include <cstring>
 #include <string>
 #include <vector>
 
-namespace Tokenizer {
-std::vector<std::string> parse_input(const std::string &input);
-}
+class Tokenizer {
+ public:
+  explicit Tokenizer(const std::string& input);
+  std::vector<std::string> tokenize();
 
-#endif  // TOKENIZER_H
+ private:
+  std::string input;
+};
