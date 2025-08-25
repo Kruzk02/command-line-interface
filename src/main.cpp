@@ -32,6 +32,14 @@ std::expected<void, std::string> handle_command(
     return std::unexpected("Command not found");
   }
 
+  for (int i = 0; i < inputs.size(); i++) {
+    if (inputs[i].starts_with("-a")) {
+      ctx.options.is_show_hidden = true;
+    } else if (inputs[i].starts_with("-l")) {
+      ctx.options.is_list_information = true;
+    }
+  }
+
   ctx.arguments.clear();
   Command *cmd = commandMap[ctx.command]();
 
@@ -54,6 +62,7 @@ int main(int argc, char *argv[]) {
   commandMap["help"] = []() { return new HelpCommand(); };
 
   while (true) {
+    ctx.options.reset();
     if (ctx.currentDirectory.empty())
       ctx.currentDirectory = std::filesystem::current_path().string();
     std::cout << ctx.currentDirectory << "$ ";

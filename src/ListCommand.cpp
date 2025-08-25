@@ -46,10 +46,12 @@ void ListCommand::execute(CommandContext& ctx) {
         entry.path().string().substr(currentDirectory.size() + 1);
 
     if (!ctx.arguments.empty()) {
-      if (ctx.arguments[0] == "-a") {
+      if (ctx.options.is_show_hidden) {
         std::cout << directory << std::endl;
-      } else if (ctx.arguments[0] == "-l") {
-        if (directory[0] != '.') {
+      }
+
+      if (ctx.options.is_list_information) {
+        if (!ctx.options.is_show_hidden) {
           fs::file_status status = fs::status(directory);
           fs::perms p = status.permissions();
 
