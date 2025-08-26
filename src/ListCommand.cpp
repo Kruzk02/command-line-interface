@@ -9,6 +9,43 @@
 #include <string>
 
 namespace fs = std::filesystem;
+uintmax_t get_directory_size(const fs::path& dir);
+void print_list_information(fs::perms p, std::string directory);
+std::tm* getFileLastModificationTime(std::string directory);
+
+void ListCommand::execute(CommandContext& ctx) {
+  std::string currentDirectory = ctx.currentDirectory;
+  for (const auto& entry : fs::directory_iterator(currentDirectory)) {
+    std::string directory =
+        entry.path().string().substr(currentDirectory.size() + 1);
+
+    if (!ctx.arguments.empty()) {
+      if (ctx.options.is_list_information) {
+        fs::file_status status = fs::status(directory);
+        fs::perms p = status.permissions();
+
+        std::tm* time_info;
+
+        if (!ctx.options.is_show_hidden) {
+          if (directory.at(0) != '.') {
+            print_list_information(p, directory);
+          }
+        } else {
+          print_list_information(p, directory);
+        }
+      }
+
+      if (ctx.options.is_show_hidden && !ctx.options.is_list_information) {
+        std::cout << directory << std::endl;
+      }
+
+    } else {
+      if (directory.at(0) != '.') {
+        std::cout << directory << std::endl;
+      }
+    }
+  }
+}
 
 uintmax_t get_directory_size(const fs::path& dir) {
   uintmax_t size = 0;
@@ -27,6 +64,16 @@ uintmax_t get_directory_size(const fs::path& dir) {
   return size;
 }
 
+void print_list_information(fs::perms p, std::string directory) {
+  std::cout << ((p & fs::perms::owner_read) != fs::perms::none ? "r" : "-")
+            << ((p & fs::perms::owner_write) != fs::perms::none ? "w" : "-")
+            << ((p & fs::perms::owner_exec) != fs::perms::none ? "x" : "-")
+            << "\t" << get_directory_size(directory) << "\t"
+            << std::put_time(getFileLastModificationTime(directory),
+                             "%m %d %H:%M")
+            << "\t" << directory << std::endl;
+}
+
 std::tm* getFileLastModificationTime(std::string directory) {
   fs::file_time_type ftime = fs::last_write_time(directory);
 
@@ -37,39 +84,4 @@ std::tm* getFileLastModificationTime(std::string directory) {
   std::time_t cftime = std::chrono::system_clock::to_time_t(time);
 
   return std::localtime(&cftime);
-}
-
-void ListCommand::execute(CommandContext& ctx) {
-  std::string currentDirectory = ctx.currentDirectory;
-  for (const auto& entry : fs::directory_iterator(currentDirectory)) {
-    std::string directory =
-        entry.path().string().substr(currentDirectory.size() + 1);
-
-    if (!ctx.arguments.empty()) {
-      if (ctx.options.is_show_hidden) {
-        std::cout << directory << std::endl;
-      }
-
-      if (ctx.options.is_list_information) {
-        if (!ctx.options.is_show_hidden) {
-          fs::file_status status = fs::status(directory);
-          fs::perms p = status.permissions();
-
-          std::tm* timeInfo = getFileLastModificationTime(directory);
-
-          std::cout
-              << ((p & fs::perms::owner_read) != fs::perms::none ? "r" : "-")
-              << ((p & fs::perms::owner_write) != fs::perms::none ? "w" : "-")
-              << ((p & fs::perms::owner_exec) != fs::perms::none ? "x" : "-")
-              << "\t" << get_directory_size(directory) << "\t"
-              << std::put_time(timeInfo, "%m %d %H:%M") << "\t" << directory
-              << std::endl;
-        }
-      }
-    } else {
-      if (directory.at(0) != '.') {
-        std::cout << directory << std::endl;
-      }
-    }
-  }
 }
