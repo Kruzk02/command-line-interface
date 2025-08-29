@@ -18,41 +18,7 @@ std::unordered_map<std::string, std::function<Command *()>> commandMap;
 CommandContext ctx;
 
 std::expected<void, std::string> handle_command(
-    Invoker &invoker, const std::vector<std::string> &inputs) {
-  if (inputs.empty()) return std::unexpected("Input cannot be empty");
-
-  if (inputs[0] == "exit") {
-    std::cout << "exit\n";
-    exit(0);
-  }
-
-  ctx.command = inputs[0];
-
-  if (commandMap.find(ctx.command) == commandMap.end()) {
-    return std::unexpected("Command not found");
-  }
-
-  for (int i = 0; i < inputs.size(); i++) {
-    if (inputs[i].starts_with("-a")) {
-      ctx.options.is_show_hidden = true;
-    } else if (inputs[i].starts_with("-l")) {
-      ctx.options.is_list_information = true;
-    }
-  }
-
-  ctx.arguments.clear();
-  Command *cmd = commandMap[ctx.command]();
-
-  if (inputs.size() > 1) {
-    ctx.arguments.assign(inputs.begin() + 1, inputs.end());
-  }
-
-  invoker.setCommand(cmd);
-  invoker.execute(ctx);
-  delete cmd;
-
-  return {};
-}
+    Invoker &invoker, const std::vector<std::string> &inputs);
 
 int main(int argc, char *argv[]) {
   Invoker invoker;
@@ -77,4 +43,65 @@ int main(int argc, char *argv[]) {
       std::cerr << "Error: " << result.error() << std::endl;
     }
   }
+}
+
+std::expected<void, std::string> validate_inputs(
+    const std::vector<std::string> &inputs) {
+  if (inputs.empty()) return std::unexpected("Input cannot be empty");
+  return {};
+}
+
+void parse_options(const std::vector<std::string> &inputs,
+                   CommandContext &ctx) {
+  for (const auto &token : inputs) {
+    if (token.starts_with("-a")) {
+      ctx.options.is_show_hidden = true;
+    } else if (token.starts_with("-l")) {
+      ctx.options.is_list_information = true;
+    }
+  }
+}
+
+void parse_arguments(const std::vector<std::string> &inputs,
+                     CommandContext &ctx) {
+  if (inputs.size() > 1) {
+    ctx.arguments.assign(inputs.begin() + 1, inputs.end());
+  }
+}
+
+bool handle_builtin(const std::string &command) {
+  if (command == "exit") {
+    std::cout << "exit" << std::endl;
+    exit(1);
+  }
+  return false;
+}
+
+std::expected<void, std::string> handle_command(
+    Invoker &invoker, const std::vector<std::string> &inputs) {
+  if (auto validation = validate_inputs(inputs); !validation) {
+    return validation;
+  }
+
+  if (handle_builtin(inputs[0])) {
+    return {};
+  }
+
+  ctx.command = inputs[0];
+
+  if (commandMap.find(ctx.command) == commandMap.end()) {
+    return std::unexpected("Command not found");
+  }
+
+  parse_options(inputs, ctx);
+  ctx.arguments.clear();
+  parse_arguments(inputs, ctx);
+
+  Command *cmd = commandMap[ctx.command]();
+
+  invoker.setCommand(cmd);
+  invoker.execute(ctx);
+  delete cmd;
+
+  return {};
 }
