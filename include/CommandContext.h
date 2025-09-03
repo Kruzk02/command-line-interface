@@ -3,19 +3,13 @@
 
 #pragma once
 struct CommandContext {
-  struct Options {
-    bool is_show_hidden;
-    bool is_list_information;
-
-    void reset() {
-      is_show_hidden = false;
-      is_list_information = false;
-    }
-  };
+  enum Options { SHOW_HIDDEN = 1 << 0, LIST_INFORMATION = 2 << 0 };
 
   std::string command;
   std::vector<std::string> arguments;
-  Options options;
+  int options;
 
   std::string currentDirectory;
+
+  void resetOptions() { options = 0; }
 };
