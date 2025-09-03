@@ -20,13 +20,13 @@ void ListCommand::execute(CommandContext& ctx) {
         entry.path().string().substr(currentDirectory.size() + 1);
 
     if (!ctx.arguments.empty()) {
-      if (ctx.options.is_list_information) {
+      if (ctx.options & ctx.LIST_INFORMATION) {
         fs::file_status status = fs::status(directory);
         fs::perms p = status.permissions();
 
         std::tm* time_info;
 
-        if (!ctx.options.is_show_hidden) {
+        if (!(ctx.options & ctx.SHOW_HIDDEN)) {
           if (directory.at(0) != '.') {
             print_list_information(p, directory);
           }
@@ -35,7 +35,8 @@ void ListCommand::execute(CommandContext& ctx) {
         }
       }
 
-      if (ctx.options.is_show_hidden && !ctx.options.is_list_information) {
+      if (ctx.options & ctx.SHOW_HIDDEN &&
+          !(ctx.options & ctx.LIST_INFORMATION)) {
         std::cout << directory << std::endl;
       }
 
@@ -45,6 +46,7 @@ void ListCommand::execute(CommandContext& ctx) {
       }
     }
   }
+  std::cout << ctx.options << std::endl;
 }
 
 uintmax_t get_directory_size(const fs::path& dir) {

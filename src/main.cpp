@@ -1,3 +1,4 @@
+#include <cctype>
 #include <cstdlib>
 #include <expected>
 #include <filesystem>
@@ -14,7 +15,11 @@
 #include "../include/Tokenizer.h"
 #include "../include/cdCommand.h"
 
-std::unordered_map<std::string, std::function<Command *()>> commandMap;
+std::unordered_map<std::string, std::function<Command *()>> commandMap = {
+    {"cd", []() { return new cdCommand(); }},
+    {"ls", []() { return new ListCommand(); }},
+    {"help", []() { return new HelpCommand(); }}};
+
 CommandContext ctx;
 
 std::expected<void, std::string> handle_command(
@@ -23,12 +28,8 @@ std::expected<void, std::string> handle_command(
 int main(int argc, char *argv[]) {
   Invoker invoker;
 
-  commandMap["cd"] = []() { return new cdCommand(); };
-  commandMap["ls"] = []() { return new ListCommand(); };
-  commandMap["help"] = []() { return new HelpCommand(); };
-
   while (true) {
-    ctx.options.reset();
+    ctx.resetOptions();
     if (ctx.currentDirectory.empty())
       ctx.currentDirectory = std::filesystem::current_path().string();
     std::cout << ctx.currentDirectory << "$ ";
@@ -54,11 +55,10 @@ std::expected<void, std::string> validate_inputs(
 void parse_options(const std::vector<std::string> &inputs,
                    CommandContext &ctx) {
   for (const auto &token : inputs) {
-    if (token.starts_with("-a")) {
-      ctx.options.is_show_hidden = true;
-    } else if (token.starts_with("-l")) {
-      ctx.options.is_list_information = true;
-    }
+    if (token == "-a")
+      ctx.options |= ctx.SHOW_HIDDEN;
+    else if (token == "-l")
+      ctx.options |= ctx.LIST_INFORMATION;
   }
 }
 
