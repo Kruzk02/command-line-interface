@@ -1,15 +1,21 @@
 #include "../include/Parser.h"
 
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 void Parser::parse_options(const std::vector<std::string> &tokens,
                            CommandContext &ctx) {
+  static const std::unordered_map<std::string, int> options = {
+      {"-a", ctx.SHOW_HIDDEN},
+      {"-l", ctx.LIST_INFORMATION},
+  };
+
   for (const auto &token : tokens) {
-    if (token == "-a")
-      ctx.options |= ctx.SHOW_HIDDEN;
-    else if (token == "-l")
-      ctx.options |= ctx.LIST_INFORMATION;
+    auto it = options.find(token);
+    if (it != options.end()) {
+      ctx.options |= it->second;
+    }
   }
 }
 
