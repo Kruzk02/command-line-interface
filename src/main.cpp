@@ -12,6 +12,7 @@
 #include "../include/HelpCommand.h"
 #include "../include/Invoker.h"
 #include "../include/ListCommand.h"
+#include "../include/Parser.h"
 #include "../include/Tokenizer.h"
 #include "../include/cdCommand.h"
 
@@ -52,23 +53,6 @@ std::expected<void, std::string> validate_inputs(
   return {};
 }
 
-void parse_options(const std::vector<std::string> &inputs,
-                   CommandContext &ctx) {
-  for (const auto &token : inputs) {
-    if (token == "-a")
-      ctx.options |= ctx.SHOW_HIDDEN;
-    else if (token == "-l")
-      ctx.options |= ctx.LIST_INFORMATION;
-  }
-}
-
-void parse_arguments(const std::vector<std::string> &inputs,
-                     CommandContext &ctx) {
-  if (inputs.size() > 1) {
-    ctx.arguments.assign(inputs.begin() + 1, inputs.end());
-  }
-}
-
 bool handle_builtin(const std::string &command) {
   if (command == "exit") {
     std::cout << "exit" << std::endl;
@@ -93,9 +77,10 @@ std::expected<void, std::string> handle_command(
     return std::unexpected("Command not found");
   }
 
-  parse_options(inputs, ctx);
+  Parser parser;
+  parser.parse_options(inputs, ctx);
   ctx.arguments.clear();
-  parse_arguments(inputs, ctx);
+  parser.parse_arguments(inputs, ctx);
 
   Command *cmd = commandMap[ctx.command]();
 

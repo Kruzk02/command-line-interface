@@ -46,7 +46,6 @@ void ListCommand::execute(CommandContext& ctx) {
       }
     }
   }
-  std::cout << ctx.options << std::endl;
 }
 
 uintmax_t get_directory_size(const fs::path& dir) {
