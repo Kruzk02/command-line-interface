@@ -1,4 +1,8 @@
+#include <sys/wait.h>
+#include <unistd.h>
+
 #include <cctype>
+#include <cstdio>
 #include <cstdlib>
 #include <expected>
 #include <filesystem>
@@ -74,7 +78,25 @@ std::expected<void, std::string> handle_command(
   ctx.command = inputs[0];
 
   if (commandMap.find(ctx.command) == commandMap.end()) {
-    return std::unexpected("Command not found");
+    pid_t pid = fork();
+    if (pid == -1) {
+      perror("fork failed");
+    } else if (pid == 0) {
+      std::vector<char *> args;
+      for (auto &s : inputs) {
+        args.push_back(const_cast<char *>(s.c_str()));
+      }
+      args.push_back(nullptr);
+
+      if (execvp(ctx.command.c_str(), args.data()) == -1) {
+        std::cout << ctx.command << ": Command not found." << std::endl;
+        exit(1);
+      }
+    } else {
+      int status;
+      wait(&status);
+    }
+    return {};
   }
 
   Parser parser;
